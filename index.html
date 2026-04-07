@@ -1,0 +1,1379 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>ArkClaw EE 桌面应用 — 企业级 AI 编程智能体控制台</title>
+        <meta
+            name="description"
+            content="ArkClaw Enterprise Edition — 云端 AI 编程智能体的桌面级控制中心。终端、对话、文件管理，一站掌控。"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            *,
+            *::before,
+            *::after {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            :root {
+                --background: hsl(0, 0%, 100%);
+                --foreground: hsl(222, 47%, 11%);
+                --card: hsl(0, 0%, 100%);
+                --card-foreground: hsl(222, 47%, 11%);
+                --muted: hsl(210, 40%, 96.1%);
+                --muted-foreground: hsl(215, 16%, 47%);
+                --border: hsl(214, 32%, 91%);
+                --input: hsl(214, 32%, 91%);
+                --primary: hsl(222, 47%, 11%);
+                --primary-foreground: hsl(210, 40%, 98%);
+                --secondary: hsl(210, 40%, 96.1%);
+                --secondary-foreground: hsl(222, 47%, 11%);
+                --accent: hsl(210, 40%, 96.1%);
+                --accent-foreground: hsl(222, 47%, 11%);
+                --ring: hsl(222, 47%, 11%);
+                --radius: 0.75rem;
+                --radius-sm: 0.5rem;
+                --font-display: Arial, "Noto Sans SC", system-ui, sans-serif;
+                --font-body: Arial, "Noto Sans SC", system-ui, sans-serif;
+                --font-mono: "JetBrains Mono", monospace;
+                --nav-height: 64px;
+                --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            html {
+                scroll-behavior: smooth;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            body {
+                font-family: var(--font-body);
+                background: var(--background);
+                color: var(--foreground);
+                overflow-x: hidden;
+                line-height: 1.6;
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                padding: 0 24px;
+            }
+
+            /* ===== SCROLL REVEAL ===== */
+            .reveal {
+                opacity: 0;
+                transform: translateY(28px);
+                transition:
+                    opacity 0.7s var(--ease-out),
+                    transform 0.7s var(--ease-out);
+            }
+            .reveal.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .reveal-d1 {
+                transition-delay: 0.08s;
+            }
+            .reveal-d2 {
+                transition-delay: 0.16s;
+            }
+            .reveal-d3 {
+                transition-delay: 0.24s;
+            }
+            .reveal-d4 {
+                transition-delay: 0.32s;
+            }
+            .reveal-d5 {
+                transition-delay: 0.4s;
+            }
+
+            /* ===== NAVIGATION ===== */
+            .nav {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 100;
+                height: var(--nav-height);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition:
+                    background 0.3s,
+                    border-color 0.3s,
+                    backdrop-filter 0.3s;
+                border-bottom: 1px solid transparent;
+            }
+            .nav.scrolled {
+                background: hsla(0, 0%, 100%, 0.8);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border-bottom-color: var(--border);
+            }
+            .nav-inner {
+                max-width: 1100px;
+                width: 100%;
+                padding: 0 24px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .nav-logo {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-family: var(--font-display);
+                font-weight: 700;
+                font-size: 18px;
+                letter-spacing: -0.02em;
+            }
+            .nav-logo-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 7px;
+                background: var(--primary);
+                color: var(--primary-foreground);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: 800;
+                font-family: var(--font-mono);
+            }
+            .ee-badge {
+                font-size: 10px;
+                font-weight: 600;
+                font-family: var(--font-mono);
+                padding: 1px 6px;
+                border-radius: 4px;
+                background: var(--foreground);
+                color: var(--background);
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                line-height: 1.5;
+            }
+            .nav-links {
+                display: flex;
+                align-items: center;
+                gap: 28px;
+            }
+            .nav-links a {
+                font-size: 14px;
+                color: var(--muted-foreground);
+                transition: color 0.15s;
+            }
+            .nav-links a:hover {
+                color: var(--foreground);
+            }
+
+            .btn-primary {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 18px;
+                border: none;
+                border-radius: var(--radius-sm);
+                background: var(--primary);
+                color: var(--primary-foreground);
+                font-family: var(--font-body);
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: opacity 0.15s;
+                text-decoration: none;
+                white-space: nowrap;
+            }
+            .btn-primary:hover {
+                opacity: 0.85;
+            }
+            .btn-primary svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .btn-outline {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 18px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                background: var(--background);
+                color: var(--foreground);
+                font-family: var(--font-body);
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                transition:
+                    background 0.15s,
+                    border-color 0.15s;
+                text-decoration: none;
+            }
+            .btn-outline:hover {
+                background: var(--muted);
+                border-color: hsl(214, 20%, 84%);
+            }
+            .btn-outline svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            /* Mobile nav toggle */
+            .nav-toggle {
+                display: none;
+                background: none;
+                border: none;
+                color: var(--foreground);
+                cursor: pointer;
+                padding: 4px;
+            }
+            .nav-toggle svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            /* ===== HERO ===== */
+            .hero {
+                position: relative;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: calc(var(--nav-height) + 48px) 24px 96px;
+                text-align: center;
+            }
+
+            /* Subtle dot grid */
+            .hero::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background-image: radial-gradient(
+                    circle,
+                    hsl(214, 20%, 84%) 1px,
+                    transparent 1px
+                );
+                background-size: 24px 24px;
+                mask-image: radial-gradient(
+                    ellipse 60% 50% at 50% 40%,
+                    black 20%,
+                    transparent 70%
+                );
+                -webkit-mask-image: radial-gradient(
+                    ellipse 60% 50% at 50% 40%,
+                    black 20%,
+                    transparent 70%
+                );
+                opacity: 0.5;
+                pointer-events: none;
+            }
+
+            .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 5px 14px 5px 7px;
+                border-radius: 100px;
+                border: 1px solid var(--border);
+                background: var(--background);
+                font-size: 13px;
+                color: var(--muted-foreground);
+                margin-bottom: 28px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            }
+            .hero-badge .dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: hsl(142, 71%, 45%);
+                box-shadow: 0 0 6px hsla(142, 71%, 45%, 0.4);
+                animation: pulse-dot 2s ease-in-out infinite;
+            }
+            @keyframes pulse-dot {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.4;
+                }
+            }
+
+            .hero h1 {
+                font-family: var(--font-display);
+                font-size: clamp(40px, 6vw, 72px);
+                font-weight: 800;
+                line-height: 1.08;
+                letter-spacing: -0.035em;
+                margin-bottom: 20px;
+                max-width: 720px;
+                position: relative;
+            }
+
+            .hero-sub {
+                font-size: clamp(15px, 1.8vw, 18px);
+                color: var(--muted-foreground);
+                max-width: 480px;
+                margin: 0 auto 40px;
+                line-height: 1.7;
+                font-weight: 300;
+            }
+
+            .hero-actions {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn-primary-lg {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 12px 28px;
+                border: none;
+                border-radius: var(--radius-sm);
+                background: var(--primary);
+                color: var(--primary-foreground);
+                font-family: var(--font-body);
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+                transition:
+                    opacity 0.15s,
+                    box-shadow 0.2s;
+                text-decoration: none;
+            }
+            .btn-primary-lg:hover {
+                opacity: 0.9;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            }
+            .btn-primary-lg svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .btn-outline-lg {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 12px 28px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                background: var(--background);
+                color: var(--foreground);
+                font-family: var(--font-body);
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+                transition:
+                    background 0.15s,
+                    border-color 0.15s;
+                text-decoration: none;
+            }
+            .btn-outline-lg:hover {
+                background: var(--muted);
+            }
+            .btn-outline-lg svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            /* ===== FEATURES ===== */
+            .features {
+                position: relative;
+                padding: 96px 0;
+                z-index: 1;
+                border-top: 1px solid var(--border);
+            }
+
+            .section-label {
+                font-family: var(--font-mono);
+                font-size: 13px;
+                font-weight: 500;
+                color: var(--muted-foreground);
+                margin-bottom: 12px;
+            }
+            .section-title {
+                font-family: var(--font-display);
+                font-size: clamp(28px, 3.5vw, 40px);
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                line-height: 1.15;
+                margin-bottom: 12px;
+            }
+            .section-desc {
+                font-size: 16px;
+                color: var(--muted-foreground);
+                max-width: 480px;
+                line-height: 1.7;
+                font-weight: 300;
+            }
+            .features-header {
+                margin-bottom: 56px;
+            }
+
+            /* Bento Grid */
+            .bento-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+
+            .bento-card {
+                position: relative;
+                border-radius: var(--radius);
+                border: 1px solid var(--border);
+                background: var(--card);
+                padding: 28px;
+                transition:
+                    border-color 0.2s,
+                    box-shadow 0.2s;
+            }
+            .bento-card:hover {
+                border-color: hsl(214, 20%, 84%);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            }
+            .bento-card.span-2 {
+                grid-column: span 2;
+            }
+
+            .bento-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: var(--radius-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 16px;
+                background: var(--muted);
+                color: var(--foreground);
+            }
+            .bento-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .bento-card h3 {
+                font-family: var(--font-display);
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 6px;
+                letter-spacing: -0.01em;
+            }
+            .bento-card p {
+                font-size: 14px;
+                color: var(--muted-foreground);
+                line-height: 1.6;
+            }
+
+            /* Mini chat mockup */
+            .bento-chat {
+                margin-top: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .chat-bubble {
+                padding: 10px 14px;
+                border-radius: 10px;
+                font-size: 12.5px;
+                line-height: 1.5;
+                max-width: 85%;
+            }
+            .chat-bubble.user {
+                align-self: flex-end;
+                background: var(--primary);
+                color: var(--primary-foreground);
+            }
+            .chat-bubble.ai {
+                align-self: flex-start;
+                background: var(--muted);
+                color: var(--foreground);
+                border: 1px solid var(--border);
+            }
+
+            /* Mini terminal mockup */
+            .bento-terminal {
+                margin-top: 16px;
+                background: var(--muted);
+                border-radius: var(--radius-xs);
+                padding: 14px;
+                font-family: var(--font-mono);
+                font-size: 11.5px;
+                line-height: 1.8;
+                color: var(--muted-foreground);
+                border: 1px solid var(--border);
+            }
+            .bento-terminal .bt-prompt {
+                color: hsl(142, 60%, 40%);
+            }
+            .bento-terminal .bt-cmd {
+                color: var(--foreground);
+            }
+            .bento-terminal .bt-ok {
+                color: hsl(142, 71%, 40%);
+            }
+
+            /* ===== SHOWCASE ===== */
+            .showcase {
+                position: relative;
+                padding: 96px 0;
+                z-index: 1;
+                border-top: 1px solid var(--border);
+            }
+            .showcase-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 64px;
+                align-items: center;
+            }
+
+            .showcase-window {
+                border-radius: var(--radius);
+                border: 1px solid var(--border);
+                background: var(--card);
+                overflow: hidden;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            }
+            .sw-bar {
+                display: flex;
+                align-items: center;
+                padding: 10px 14px;
+                background: var(--muted);
+                border-bottom: 1px solid var(--border);
+                gap: 8px;
+            }
+            .sw-dots {
+                display: flex;
+                gap: 5px;
+            }
+            .sw-dots span {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+            }
+            .sw-dots span:nth-child(1) {
+                background: hsl(0, 80%, 65%);
+            }
+            .sw-dots span:nth-child(2) {
+                background: hsl(40, 90%, 60%);
+            }
+            .sw-dots span:nth-child(3) {
+                background: hsl(130, 55%, 50%);
+            }
+            .sw-tab {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                color: var(--muted-foreground);
+                padding: 2px 8px;
+                border-radius: 4px;
+                background: var(--background);
+                margin-left: 8px;
+                border: 1px solid var(--border);
+            }
+            .sw-content {
+                padding: 18px;
+                font-family: var(--font-mono);
+                font-size: 12px;
+                line-height: 1.85;
+            }
+            .file-tree {
+                color: var(--muted-foreground);
+            }
+            .file-tree .ft-dir {
+                color: hsl(210, 70%, 50%);
+            }
+            .file-tree .ft-active {
+                color: var(--foreground);
+                background: var(--muted);
+                border-radius: 3px;
+                padding: 1px 6px;
+                margin: -1px -6px;
+            }
+            .file-tree .ft-indent {
+                padding-left: 20px;
+            }
+            .file-tree .ft-indent-2 {
+                padding-left: 40px;
+            }
+
+            .showcase-content .section-desc {
+                margin-bottom: 28px;
+            }
+
+            .feature-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .feature-list-item {
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            .fli-icon {
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: var(--muted);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                margin-top: 2px;
+            }
+            .fli-icon svg {
+                width: 12px;
+                height: 12px;
+                color: var(--foreground);
+            }
+            .feature-list-item span {
+                font-size: 14px;
+                color: var(--muted-foreground);
+                line-height: 1.5;
+            }
+
+            /* ===== STATS ===== */
+            .stats {
+                position: relative;
+                padding: 64px 0;
+                z-index: 1;
+                border-top: 1px solid var(--border);
+            }
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+            .stat-card {
+                text-align: center;
+                padding: 36px 20px;
+                border-radius: var(--radius);
+                border: 1px solid var(--border);
+                background: var(--card);
+            }
+            .stat-value {
+                font-family: var(--font-display);
+                font-size: 36px;
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                color: var(--foreground);
+                margin-bottom: 4px;
+            }
+            .stat-label {
+                font-size: 13px;
+                color: var(--muted-foreground);
+            }
+
+            /* ===== CTA ===== */
+            .cta {
+                position: relative;
+                padding: 96px 0 120px;
+                z-index: 1;
+                border-top: 1px solid var(--border);
+                text-align: center;
+            }
+            .cta-card {
+                max-width: 640px;
+                margin: 0 auto;
+                padding: 64px 48px;
+                border-radius: var(--radius);
+                border: 1px solid var(--border);
+                background: var(--muted);
+            }
+            .cta-card h2 {
+                font-family: var(--font-display);
+                font-size: clamp(26px, 3vw, 36px);
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                margin-bottom: 12px;
+            }
+            .cta-card p {
+                font-size: 15px;
+                color: var(--muted-foreground);
+                margin-bottom: 32px;
+                line-height: 1.7;
+            }
+            .cta-actions {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .platform-note {
+                font-family: var(--font-mono);
+                font-size: 12px;
+                color: var(--muted-foreground);
+                margin-top: 16px;
+                opacity: 0.7;
+            }
+
+            /* ===== FOOTER ===== */
+            .footer {
+                position: relative;
+                z-index: 1;
+                border-top: 1px solid var(--border);
+                padding: 32px 0;
+            }
+            .footer-inner {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .footer-left {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                color: var(--muted-foreground);
+            }
+            .footer-right {
+                font-family: var(--font-mono);
+                font-size: 12px;
+                color: var(--muted-foreground);
+            }
+
+            /* ===== RESPONSIVE ===== */
+            @media (max-width: 1024px) {
+                .bento-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+                .bento-card.span-2 {
+                    grid-column: span 2;
+                }
+                .showcase-grid {
+                    grid-template-columns: 1fr;
+                    gap: 40px;
+                }
+                .showcase-visual {
+                    order: -1;
+                }
+                .stats-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+            @media (max-width: 768px) {
+                .nav-links {
+                    display: none;
+                }
+                .nav-toggle {
+                    display: block;
+                }
+                .nav-links.open {
+                    display: flex;
+                    flex-direction: column;
+                    position: absolute;
+                    top: var(--nav-height);
+                    left: 0;
+                    right: 0;
+                    background: hsla(0, 0%, 100%, 0.97);
+                    backdrop-filter: blur(16px);
+                    padding: 20px 24px;
+                    border-bottom: 1px solid var(--border);
+                    gap: 16px;
+                }
+                .bento-grid {
+                    grid-template-columns: 1fr;
+                }
+                .bento-card.span-2 {
+                    grid-column: span 1;
+                }
+                .hero h1 {
+                    font-size: 34px;
+                }
+                .hero-sub {
+                    font-size: 15px;
+                }
+                .cta-card {
+                    padding: 40px 24px;
+                }
+                .footer-inner {
+                    flex-direction: column;
+                    gap: 12px;
+                    text-align: center;
+                }
+            }
+            @media (max-width: 480px) {
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+                .hero-actions {
+                    flex-direction: column;
+                    width: 100%;
+                }
+                .btn-primary-lg,
+                .btn-outline-lg {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- ===== NAVIGATION ===== -->
+        <nav class="nav" id="nav">
+            <div class="nav-inner">
+                <a href="#" class="nav-logo">
+                    <div class="nav-logo-icon">A</div>
+                    <span>ArkClaw</span>
+                    <span class="ee-badge">EE</span>
+                </a>
+                <button
+                    class="nav-toggle"
+                    id="navToggle"
+                    aria-label="Toggle menu"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    >
+                        <line x1="4" y1="7" x2="20" y2="7" />
+                        <line x1="4" y1="12" x2="20" y2="12" />
+                        <line x1="4" y1="17" x2="20" y2="17" />
+                    </svg>
+                </button>
+                <div class="nav-links" id="navLinks">
+                    <a href="#features">功能</a>
+                    <a href="#showcase">探索</a>
+                    <a href="#download">下载</a>
+                    <a
+                        href="https://janus-public.tos-cn-beijing.volces.com/test/ArkClaw%20EE-0.1.0-arm64.dmg"
+                        class="btn-primary"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path
+                                d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                            />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        下载
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ===== HERO ===== -->
+        <section class="hero" id="hero">
+            <div class="reveal">
+                <div class="hero-badge">
+                    <span class="dot"></span>
+                    ArkClaw EE 桌面应用 v1.0 现已发布
+                </div>
+            </div>
+
+            <h1 class="reveal reveal-d1">ArkClaw EE 桌面应用</h1>
+
+            <p class="hero-sub reveal reveal-d2">
+                一站式管理云端编程智能体。终端操控、AI
+                对话、文件编辑、定时任务、技能扩展——尽在指尖。
+            </p>
+
+            <div class="hero-actions reveal reveal-d3">
+                <a
+                    href="https://janus-public.tos-cn-beijing.volces.com/test/ArkClaw%20EE-0.1.0-arm64.dmg"
+                    class="btn-primary-lg"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    免费下载 macOS 版
+                </a>
+                <a href="#features" class="btn-outline-lg"> 了解更多 </a>
+            </div>
+        </section>
+
+        <!-- ===== FEATURES ===== -->
+        <section class="features" id="features">
+            <div class="container">
+                <div class="features-header">
+                    <div class="section-label reveal">核心能力</div>
+                    <h2 class="section-title reveal reveal-d1">
+                        一个桌面，掌控全局
+                    </h2>
+                    <p class="section-desc reveal reveal-d2">
+                        从对话到部署，ArkClaw EE
+                        将云端智能体的全部能力收归本地，提供沉浸式操控体验。
+                    </p>
+                </div>
+
+                <div class="bento-grid">
+                    <!-- AI Chat — spans 2 -->
+                    <div class="bento-card span-2 reveal">
+                        <div class="bento-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                                />
+                            </svg>
+                        </div>
+                        <h3>AI 对话</h3>
+                        <p>
+                            WebSocket
+                            实时流式对话，支持工具调用、思维链展示、Markdown
+                            渲染与 30+ 斜杠命令。
+                        </p>
+                        <div class="bento-chat">
+                            <div class="chat-bubble user">
+                                帮我重构 auth 模块，把 session 存储迁移到 Redis
+                            </div>
+                            <div class="chat-bubble ai">
+                                好的，我来分析当前的 session 存储逻辑……已识别 3
+                                个需要修改的文件，正在生成迁移方案。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terminal -->
+                    <div class="bento-card reveal reveal-d1">
+                        <div class="bento-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <polyline points="4 17 10 11 4 5" />
+                                <line x1="12" y1="19" x2="20" y2="19" />
+                            </svg>
+                        </div>
+                        <h3>远程终端</h3>
+                        <p>
+                            基于 xterm.js
+                            的全功能终端，实时连接云端实例，支持快捷命令面板。
+                        </p>
+                        <div class="bento-terminal">
+                            <div>
+                                <span class="bt-prompt">$</span>
+                                <span class="bt-cmd">openclaw status</span>
+                            </div>
+                            <div>
+                                <span class="bt-ok">● Running</span> | GPU: A100
+                                | Mem: 12.4G/16G
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Explorer -->
+                    <div class="bento-card reveal reveal-d1">
+                        <div class="bento-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+                                />
+                            </svg>
+                        </div>
+                        <h3>文件管理</h3>
+                        <p>
+                            WebDAV 双栏文件浏览器，支持 20+
+                            语言语法高亮与实时编辑保存。
+                        </p>
+                    </div>
+
+                    <!-- Shortcuts -->
+                    <div class="bento-card reveal reveal-d2">
+                        <div class="bento-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                            </svg>
+                        </div>
+                        <h3>快捷指令</h3>
+                        <p>
+                            一键执行常用运维操作——重启网关、查看日志、磁盘用量、进程监控。
+                        </p>
+                    </div>
+
+                    <!-- Cron -->
+                    <div class="bento-card reveal reveal-d2">
+                        <div class="bento-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                        </div>
+                        <h3>定时任务</h3>
+                        <p>
+                            可视化 Cron 任务管理，创建、调度、监控周期性作业。
+                        </p>
+                    </div>
+
+                    <!-- Skill Hub -->
+                    <div class="bento-card reveal reveal-d3">
+                        <div class="bento-icon">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <polygon
+                                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                                />
+                            </svg>
+                        </div>
+                        <h3>技能中心</h3>
+                        <p>
+                            可扩展的插件/技能系统，浏览、搜索、管理智能体的全部能力模块。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SHOWCASE ===== -->
+        <section class="showcase" id="showcase">
+            <div class="container">
+                <div class="showcase-grid">
+                    <div class="showcase-content">
+                        <div class="section-label reveal">边缘-云端协同</div>
+                        <h2 class="section-title reveal reveal-d1">
+                            本地与云端<br />无缝协作
+                        </h2>
+                        <p class="section-desc reveal reveal-d2">
+                            通过 OpenClaw Gateway
+                            双向通道，在本地机器与云端实例之间建立实时协作桥梁。
+                        </p>
+                        <div class="feature-list reveal reveal-d3">
+                            <div class="feature-list-item">
+                                <div class="fli-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                        stroke-linecap="round"
+                                    >
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </div>
+                                <span
+                                    >OpenClaw Gateway 双向命令通道（Janus
+                                    协议）</span
+                                >
+                            </div>
+                            <div class="feature-list-item">
+                                <div class="fli-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                        stroke-linecap="round"
+                                    >
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </div>
+                                <span
+                                    >本地 CLI
+                                    工具一键安装，边缘计算即时生效</span
+                                >
+                            </div>
+                            <div class="feature-list-item">
+                                <div class="fli-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                        stroke-linecap="round"
+                                    >
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </div>
+                                <span
+                                    >多实例切换管理，企业级 OAuth 安全认证</span
+                                >
+                            </div>
+                            <div class="feature-list-item">
+                                <div class="fli-icon">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                        stroke-linecap="round"
+                                    >
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </div>
+                                <span>macOS 原生体验，无边框窗口设计</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="showcase-visual reveal">
+                        <div class="showcase-window">
+                            <div class="sw-bar">
+                                <div class="sw-dots">
+                                    <span></span><span></span><span></span>
+                                </div>
+                                <span class="sw-tab">文件浏览器</span>
+                            </div>
+                            <div class="sw-content">
+                                <div class="file-tree">
+                                    <div>
+                                        <span class="ft-dir">&#9660; src/</span>
+                                    </div>
+                                    <div class="ft-indent">
+                                        <span class="ft-dir"
+                                            >&#9660; modules/</span
+                                        >
+                                    </div>
+                                    <div class="ft-indent-2">
+                                        <span class="ft-active"
+                                            >auth.service.ts</span
+                                        >
+                                    </div>
+                                    <div class="ft-indent-2">
+                                        <span class="ft-file"
+                                            >session.store.ts</span
+                                        >
+                                    </div>
+                                    <div class="ft-indent-2">
+                                        <span class="ft-file"
+                                            >gateway.proxy.ts</span
+                                        >
+                                    </div>
+                                    <div class="ft-indent">
+                                        <span class="ft-dir"
+                                            >&#9654; utils/</span
+                                        >
+                                    </div>
+                                    <div class="ft-indent">
+                                        <span class="ft-dir"
+                                            >&#9654; config/</span
+                                        >
+                                    </div>
+                                    <div>
+                                        <span class="ft-dir"
+                                            >&#9654; tests/</span
+                                        >
+                                    </div>
+                                    <div>
+                                        <span class="ft-file"
+                                            >package.json</span
+                                        >
+                                    </div>
+                                    <div>
+                                        <span class="ft-file"
+                                            >tsconfig.json</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== STATS ===== -->
+        <section class="stats">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card reveal">
+                        <div class="stat-value">30+</div>
+                        <div class="stat-label">斜杠命令</div>
+                    </div>
+                    <div class="stat-card reveal reveal-d1">
+                        <div class="stat-value">20+</div>
+                        <div class="stat-label">语法高亮语言</div>
+                    </div>
+                    <div class="stat-card reveal reveal-d2">
+                        <div class="stat-value">&lt;50ms</div>
+                        <div class="stat-label">WebSocket 延迟</div>
+                    </div>
+                    <div class="stat-card reveal reveal-d3">
+                        <div class="stat-value">&infin;</div>
+                        <div class="stat-label">可扩展技能</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CTA ===== -->
+        <section class="cta" id="download">
+            <div class="container">
+                <div class="cta-card reveal">
+                    <h2>准备好掌控你的<br />云端智能体了吗？</h2>
+                    <p>
+                        下载 ArkClaw EE 桌面应用，开启企业级 AI
+                        编程智能体管理之旅。
+                    </p>
+                    <div class="cta-actions">
+                        <a
+                            href="https://janus-public.tos-cn-beijing.volces.com/test/ArkClaw%20EE-0.1.0-arm64.dmg"
+                            class="btn-primary-lg"
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                                />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            下载 macOS 版
+                        </a>
+                    </div>
+                    <p class="platform-note">
+                        适用于 macOS 12.0+ · Apple Silicon & Intel
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-inner">
+                    <div class="footer-left">
+                        <div
+                            class="nav-logo-icon"
+                            style="
+                                width: 20px;
+                                height: 20px;
+                                font-size: 10px;
+                                border-radius: 5px;
+                            "
+                        >
+                            A
+                        </div>
+                        <span>ArkClaw EE 桌面应用 &copy; 2026</span>
+                    </div>
+                    <div class="footer-right">Built with OpenClaw</div>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            /* Scroll reveal */
+            const obs = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((e) => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add("visible");
+                            obs.unobserve(e.target);
+                        }
+                    });
+                },
+                { threshold: 0.12, rootMargin: "0px 0px -32px 0px" },
+            );
+            document
+                .querySelectorAll(".reveal")
+                .forEach((el) => obs.observe(el));
+
+            /* Nav scroll */
+            const nav = document.getElementById("nav");
+            let ticking = false;
+            window.addEventListener("scroll", () => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        nav.classList.toggle("scrolled", scrollY > 32);
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            /* Mobile toggle */
+            document
+                .getElementById("navToggle")
+                .addEventListener("click", () => {
+                    document
+                        .getElementById("navLinks")
+                        .classList.toggle("open");
+                });
+
+            /* Smooth scroll */
+            document.querySelectorAll('a[href^="#"]').forEach((a) => {
+                a.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const t = document.querySelector(this.getAttribute("href"));
+                    if (t) {
+                        t.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                        });
+                    }
+                    document
+                        .getElementById("navLinks")
+                        .classList.remove("open");
+                });
+            });
+        </script>
+    </body>
+</html>
